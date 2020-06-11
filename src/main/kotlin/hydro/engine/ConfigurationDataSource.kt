@@ -3,34 +3,34 @@ package hydro.engine
 /**
  * Fetches configuration data from a source.
  */
-abstract class ConfigurationDataSource(
-    private val environmentProvider: EnvironmentProvider
-): ConfigData() {
+abstract class ConfigurationDataSource {
 
-    override val data: Map<String, Any>
-        get() = getConfig()
-
-    abstract fun load(environment: String): Map<String, Any>
-
-    open fun loadModule(environment: String, module: String): Map<String, Any> {
-        return load(environment)[module] as Map<String, Any>
+    open fun loadDefaults(environment: String): Map<String, Any> {
+        error("Default configuration loading isn't enabled! Override `ConfigurationDataSource.loadDefaults()`")
     }
 
-    fun getConfig(module: String? = null): ConfigData {
+    open fun loadModule(environment: String, module: String): Map<String, Any>? {
+        error("Module loading isn't enabled! Override `ConfigurationDataSource.loadModule()`")
+    }
+
+    private val cache = mutableMapOf<String, Map<String, Any>>()
+
+    fun getConfig(environment: String, module: String? = null): ConfigData {
         val res = if (module == null) {
-            this.load(
-                environmentProvider.getEnvironment()
-            )
+            this.loadDefaults(environment)
         } else {
+            val mod = cache.computeIfAbsent(environment) { env ->
+                this.loadModule(
+                    env,
+                    module
+                ) ?: error("Failed to load configuration module `$module`")
+            }
+
             mapOf(module to
-            this.loadModule(
-                environmentProvider.getEnvironment(),
-                module
-            )
+                    mod
             )
         }
 
         return MapConfigurationSource(res)
     }
-
 }

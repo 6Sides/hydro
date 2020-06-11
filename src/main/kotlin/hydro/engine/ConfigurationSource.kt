@@ -1,6 +1,10 @@
 package hydro.engine
 
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
@@ -18,6 +22,29 @@ class PropertiesConfigurationSource: ConfigData {
             e.printStackTrace()
             Properties()
         } as Map<String, Any>
+    }
+
+    constructor(file: File) : this(FileInputStream(file))
+
+
+    override val data: Map<String, Any>
+        get() {
+            return MapConfigurationSource(loaded)
+        }
+
+}
+
+class YAMLConfigurationSource: ConfigData {
+
+    private val loaded: Map<String, Any>
+
+    constructor(input: InputStream) {
+        loaded = try {
+            ObjectMapper(YAMLFactory()).registerModule(KotlinModule()).readValue(input, object: TypeReference<HashMap<String, Any>>(){})
+        } catch (e: IOException) {
+            e.printStackTrace()
+            emptyMap()
+        }
     }
 
     constructor(file: File) : this(FileInputStream(file))

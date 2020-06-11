@@ -12,6 +12,7 @@ object Hydro {
     private var _environmentProvider: EnvironmentProvider? = null
 
     val dataSource get() = _dataSource
+    val environment get() = _environmentProvider?.getEnvironment()
 
     fun init(
         environmentProvider: EnvironmentProvider,
@@ -53,10 +54,10 @@ class Hydrator(val prefix: String?, val key: String) {
                     Hydro.overriddenValues[getKey(it, key)] as R
                 } else {
                     if (getModule(thisRef::class, property).isBlank()) {
-                        Hydro.dataSource!!.getConfig(prefix).getNested(getKey(it, key))!!
+                        Hydro.dataSource!!.getConfig(Hydro.environment!!, prefix).getNested(getKey(it, key))!!
                     } else {
                         val mod = getModule(thisRef::class, property)
-                        Hydro.dataSource!!.getConfig(mod).getNested(getKey(mod, key))!!
+                        Hydro.dataSource!!.getConfig(Hydro.environment!!, mod).getNested(getKey(getKey(mod, it), key).replace("..", "."))!!
                     }
                 }
             }
@@ -92,11 +93,11 @@ fun getModule(clazz: KClass<*>, property: KProperty<*>): String {
 @Target(AnnotationTarget.CLASS, AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class HydroModule(
-    val module: String = ""
+    val module: String
 )
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class HydroPrefix(
-    val prefix: String = ""
+    val prefix: String
 )

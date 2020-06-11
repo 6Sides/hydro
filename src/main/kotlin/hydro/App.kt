@@ -2,6 +2,7 @@ package hydro
 
 import hydro.engine.*
 import hydro.engine.Hydro.hydrate
+import java.io.File
 
 
 fun main(args: Array<String>) {
@@ -11,24 +12,61 @@ fun main(args: Array<String>) {
         }
     }
 
-    Hydro.init(
-        envProvider,
-        TestSource()
-    ) {
-        overrideValue("test", "key", "overridden value!")
+    Hydro.init(envProvider, TestSource(envProvider)) {
+        overrideValue("key", "overridden value!")
     }
 
     val test = TestHydrate()
     println(test.value)
+
+    /*val a = mapOf(
+        "1" to 1,
+        "2" to mapOf<String, Any>(
+            "3" to 3,
+            "4" to 4
+        )
+    )*/
+
+    val b = mapOf(
+        "one" to 11,
+        "1" to 10,
+        "2" to mapOf<String, Any>(
+            "3" to 30
+        )
+    )
+
+    val config = PropertiesConfigurationSource(File("test.properties")) overrides
+        MapConfigurationSource(b) overrides
+        TestSource(envProvider).getConfig()
+
+    println(config)
+    println(config.getNested("one"))
+    println(config.getNested("2.4"))
 }
 
-@HydroModuleName("test")
+@HydroModule("TESFasdf")
 class TestHydrate {
-    val value: String by hydrate("key")
+    val value: String by hydrate("KEY")
 }
 
-class TestSource: ConfigurationDataSource {
-    override fun getValue(environment: String, module: String, key: String): Any {
-        return "$environment $module $key"
+class TestSource(
+    environmentProvider: EnvironmentProvider
+): ConfigurationDataSource(environmentProvider) {
+    override fun load(environment: String): Map<String, Any> {
+        return mapOf(
+            "KEY" to "VALUE!!!",
+            "key" to "value!",
+            "1" to 1,
+            "2" to mapOf<String, Any>(
+                "3" to 3,
+                "4" to 4
+            )
+        )
+    }
+
+    override fun loadModule(environment: String, module: String): Map<String, Any> {
+        return mapOf(
+            "KEY" to "VALUE"
+        )
     }
 }

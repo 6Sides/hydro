@@ -44,7 +44,7 @@ class ConverterRegistry {
     }
 
     fun getConverter(input: KType, output: KType): TypeConverter<in Any, *> {
-        return converters[Pair(input, output)] as? TypeConverter<in Any, *> ?: error("No converter registered for that pair")
+        return converters[Pair(input, output)] as? TypeConverter<in Any, *> ?: error("No converter registered for that pair ($input, $output)")
     }
 
     private fun getConverterTypes(converter: TypeConverter<*, *>): Pair<KType, KType> {

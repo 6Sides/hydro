@@ -30,6 +30,10 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-reflect
     implementation("org.jetbrains.kotlin", "kotlin-reflect", "1.3.72")
+
+    implementation("com.fasterxml.jackson.core", "jackson-databind", "2.0.1")
+    implementation("com.fasterxml.jackson.dataformat", "jackson-dataformat-properties", "2.8.8")
+    implementation("com.fasterxml.jackson.module", "jackson-module-kotlin", "2.8.11.1")
 }
 
 application {

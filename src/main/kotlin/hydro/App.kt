@@ -13,7 +13,7 @@ fun main(args: Array<String>) {
     }
 
     Hydro.init(envProvider, TestSource()) {
-        overrideValue("Test.KEY", "overridden value!")
+        overrideValue("Test.2.3", "overridden value!")
     }
 
     val test = TestHydrate()

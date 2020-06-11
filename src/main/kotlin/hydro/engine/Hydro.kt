@@ -50,21 +50,45 @@ class Hydrator(val prefix: String?, val key: String) {
     inline operator fun <reified R : Any, T : Any> getValue(thisRef: T, property: KProperty<*>): R {
         return cast((prefix ?: getPrefix(thisRef::class, property)).let {
             cache.computeIfAbsent(getKey(it, key)) { _ ->
-                if (Hydro.overriddenValues.containsKey(getKey(it, key))) {
-                    Hydro.overriddenValues[getKey(it, key)] as R
-                } else {
-                    if (getModule(thisRef::class, property).isBlank()) {
-                        Hydro.dataSource!!.getConfig(Hydro.environment!!, prefix).getNested(getKey(it, key))!!
-                    } else {
-                        val mod = getModule(thisRef::class, property)
-                        Hydro.dataSource!!.getConfig(Hydro.environment!!, mod).getNested(getKey(getKey(mod, it), key).replace("..", "."))!!
-                    }
-                }
+                computeValue<R, T>(it, thisRef, property)
             }
         })
     }
 
-    fun getKey(prefix: String, key: String): String = if (prefix.isBlank()) key else "$prefix.$key"
+    inline fun <reified R : Any, T : Any> computeValue(
+        prefix: String,
+        thisRef: T,
+        property: KProperty<*>
+    ): Any {
+        val environment = Hydro.environment!!
+        val module = getModule(thisRef::class, property)
+
+        return if (module == null) {
+            if (Hydro.overriddenValues.containsKey(getKey(prefix, key))) {
+                Hydro.overriddenValues[getKey(prefix, key)] as R
+            } else {
+                Hydro.dataSource!!.getConfig(environment, this.prefix).getNested(getKey(prefix, key))!!
+            }
+        } else {
+            if (Hydro.overriddenValues.containsKey(getKey(getKey(module, prefix), key))) {
+                Hydro.overriddenValues[getKey(getKey(module, prefix), key)] as R
+            } else {
+                Hydro.dataSource!!.getConfig(environment, module).getNested(getKey(getKey(module, prefix), key))!!
+            }
+        }
+    }
+
+    fun getKey(prefix: String, key: String): String {
+        return if (prefix.isBlank()) {
+            key
+        } else {
+            "${stripDots(prefix)}.${stripDots(key)}"
+        }
+    }
+
+    private fun stripDots(s: String): String {
+        return s.removePrefix(".").removeSuffix(".")
+    }
 
     inline fun <reified T : Any> cast(value: Any): T {
         if (value::class.starProjectedType == T::class.starProjectedType) {
@@ -85,9 +109,9 @@ fun getPrefix(clazz: KClass<*>, property: KProperty<*>): String {
     clazz.findAnnotation<HydroPrefix>()?.prefix ?: ""
 }
 
-fun getModule(clazz: KClass<*>, property: KProperty<*>): String {
+fun getModule(clazz: KClass<*>, property: KProperty<*>): String? {
     return property.findAnnotation<HydroModule>()?.module ?:
-    clazz.findAnnotation<HydroModule>()?.module ?: ""
+    clazz.findAnnotation<HydroModule>()?.module
 }
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.PROPERTY)

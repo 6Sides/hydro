@@ -8,18 +8,14 @@ import kotlin.reflect.full.starProjectedType
 
 object Hydro {
 
-    private var _dataSource: ConfigurationDataSource? = null
-    private var _environmentProvider: EnvironmentProvider? = null
+    private var _dataSource: Configuration? = null
 
     val dataSource get() = _dataSource
-    val environment get() = _environmentProvider?.getEnvironment()
 
     fun init(
-        environmentProvider: EnvironmentProvider,
-        dataSource: ConfigurationDataSource,
+        dataSource: Configuration,
         overrideValueBlock: (ConfigBlock.() -> Unit)? = null
     ) {
-        _environmentProvider = environmentProvider
         _dataSource = dataSource
         overrideValueBlock?.invoke(ConfigBlock)
     }
@@ -35,7 +31,7 @@ object Hydro {
 
 
     fun hydrate(prefix: String? = null, key: String): Hydrator {
-        require (_environmentProvider != null && dataSource != null) { "Hydro is not initialized. Use `Hydro.init()`" }
+        require (dataSource != null) { "Hydro is not initialized. Use `Hydro.init()`" }
 
         return Hydrator(prefix, key)
     }
@@ -48,9 +44,10 @@ object Hydro {
 class Hydrator(val prefix: String?, val key: String) {
 
     inline operator fun <reified R : Any, T : Any> getValue(thisRef: T, property: KProperty<*>): R {
-        return cast((prefix ?: getPrefix(thisRef::class, property)).let {
+        return cast((prefix ?: getNamespace(thisRef::class, property)).let {
             cache.computeIfAbsent(getKey(it, key)) { _ ->
-                computeValue<R, T>(it, thisRef, property)
+                val result = computeValue<R, T>(it, thisRef, property)
+                result ?: error("No value was set for ${getKey(it, key)}")
             }
         })
     }
@@ -59,22 +56,11 @@ class Hydrator(val prefix: String?, val key: String) {
         prefix: String,
         thisRef: T,
         property: KProperty<*>
-    ): Any {
-        val environment = Hydro.environment!!
-        val module = getModule(thisRef::class, property)
-
-        return if (module == null) {
-            if (Hydro.overriddenValues.containsKey(getKey(prefix, key))) {
-                Hydro.overriddenValues[getKey(prefix, key)] as R
-            } else {
-                Hydro.dataSource!!.getConfig(environment, this.prefix).getNested(getKey(prefix, key))!!
-            }
+    ): Any? {
+        return if (Hydro.overriddenValues.containsKey(getKey(prefix, key))) {
+            Hydro.overriddenValues[getKey(prefix, key)] as R?
         } else {
-            if (Hydro.overriddenValues.containsKey(getKey(getKey(module, prefix), key))) {
-                Hydro.overriddenValues[getKey(getKey(module, prefix), key)] as R
-            } else {
-                Hydro.dataSource!!.getConfig(environment, module).getNested(getKey(getKey(module, prefix), key))!!
-            }
+            Hydro.dataSource!!.getValue(getKey(prefix, key))
         }
     }
 
@@ -104,24 +90,13 @@ class Hydrator(val prefix: String?, val key: String) {
 }
 
 
-fun getPrefix(clazz: KClass<*>, property: KProperty<*>): String {
-    return property.findAnnotation<HydroPrefix>()?.prefix ?:
-    clazz.findAnnotation<HydroPrefix>()?.prefix ?: ""
-}
-
-fun getModule(clazz: KClass<*>, property: KProperty<*>): String? {
-    return property.findAnnotation<HydroModule>()?.module ?:
-    clazz.findAnnotation<HydroModule>()?.module
+fun getNamespace(clazz: KClass<*>, property: KProperty<*>): String {
+    return property.findAnnotation<HydroNamespace>()?.namespace ?:
+    clazz.findAnnotation<HydroNamespace>()?.namespace ?: ""
 }
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class HydroModule(
-    val module: String
-)
-
-@Target(AnnotationTarget.CLASS, AnnotationTarget.PROPERTY)
-@Retention(AnnotationRetention.RUNTIME)
-annotation class HydroPrefix(
-    val prefix: String
+annotation class HydroNamespace(
+    val namespace: String
 )

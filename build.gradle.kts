@@ -16,6 +16,7 @@ repositories {
     // Use jcenter for resolving dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
+    mavenCentral()
 }
 
 dependencies {
@@ -36,6 +37,8 @@ dependencies {
 
     implementation("com.fasterxml.jackson.dataformat", "jackson-dataformat-properties", "2.8.8")
     implementation("com.fasterxml.jackson.dataformat", "jackson-dataformat-yaml", "2.3.0")
+
+    compile("com.amazonaws:aws-java-sdk-s3:1.11.228")
 }
 
 application {

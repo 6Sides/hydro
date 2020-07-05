@@ -1,69 +1,51 @@
 package hydro
 
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
+import com.amazonaws.regions.Regions
+import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import hydro.engine.*
 import hydro.engine.Hydro.hydrate
-import java.io.File
 
 
 fun main(args: Array<String>) {
-    val envProvider = object : EnvironmentProvider {
-        override fun getEnvironment(): String {
-            return "production"
-        }
-    }
-
-    Hydro.init(envProvider, TestSource()) {
-        overrideValue("Test.2.3", "overridden value!")
-    }
-
-    val test = TestHydrate()
-    println(test.value)
 
     val b = mapOf(
         "one" to 11,
         "1" to 10,
         "2" to mapOf<String, Any>(
             "3" to 30
-        )
+        ),
+        "pg_port" to 4000
     )
 
-    val config = YAMLConfigurationSource(File("test.yaml")) overrides
-        MapConfigurationSource(b) overrides
-        TestSource().getConfig(envProvider.getEnvironment())
+    val s3 = AmazonS3ClientBuilder.standard()
+        .withRegion(Regions.US_EAST_2)
+        .withCredentials(DefaultAWSCredentialsProviderChain())
+        .build()
+
+    val config =
+        MapConfiguration(mapOf("nested" to mapOf("key" to "WHATT"))) overrides
+        PropertiesConfiguration(S3DataSource(s3, "www.dashflight.net-config", "java-postgres/development.properties"), "postgres") overrides
+        YAMLConfiguration(FileDataSource("test.yaml")) overrides
+        MapConfiguration(b, "postgres") overrides
+            EnvironmentConfiguration()
+
+    Hydro.init(config) {
+        overrideValue("Test.2.3", "overridden value!")
+        // overrideValue("nested.key", "WHATT")
+    }
+
+
+    val test = TestHydrate()
+    println(test.value)
 
     println(config)
-    println(config.getNested("one"))
-    println(config.getNested("2.4"))
-    println(config.getNested("nested.key"))
+    println(config.getValue("postgres.one"))
+    println(config.getValue("postgres.2"))
+    println(config.getValue("nested.key"))
 }
 
-@HydroModule("Test")
-@HydroPrefix("2")
+@HydroNamespace("postgres")
 class TestHydrate {
-    val value: String by hydrate("3")
-}
-
-class TestSource: ConfigurationDataSource() {
-
-    override fun loadDefaults(environment: String): Map<String, Any> {
-        return mapOf(
-            "KEY" to "VALUE!!!",
-            "key" to "value!",
-            "1" to 1,
-            "2" to mapOf<String, Any>(
-                "3" to 3,
-                "4" to 4
-            )
-        )
-    }
-
-    override fun loadModule(environment: String, module: String): Map<String, Any>? {
-        return mapOf(
-            "KEY" to "VALUE",
-            "2" to mapOf(
-                "3" to "10034"
-            ),
-            "3" to 564564564
-        )
-    }
+    val value: String by hydrate("pg_port")
 }

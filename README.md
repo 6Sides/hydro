@@ -97,7 +97,7 @@ Hydro.addConfiguration(config)
 
 ### Namespaces
 
-Namespaces are a way to split up your configuration data into logical groups. Imaging you have the two configuration
+Namespaces are a way to split up your configuration data into logical groups. Imagine you have these two configuration
 files:
 
 ```yaml
@@ -136,7 +136,7 @@ These values can be accessed a few different ways:
 ```kotlin
 /*
   The `postgres` namespace is specified for each field. This tells Hydro to only look
-  for values that namespace.
+  for values in that namespace.
 */
 class Database {
     val host: String by hydrate("host", "postgres")
@@ -151,7 +151,7 @@ class Database {
 ```kotlin
 /*
   The `postgres` namespace is specified for the class. This tells Hydro to always use that namespace
-  for fields in that class.
+  for fields in the class.
 */
 @HydroNamespace("postgres")
 class Database {

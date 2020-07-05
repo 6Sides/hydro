@@ -13,6 +13,10 @@ object Hydro {
 
     val dataSource get() = config
 
+    fun init(f: Hydro.() -> Unit) {
+        f.invoke(this)
+    }
+
     fun addConfiguration(
         config: Configuration
     ) {
@@ -28,7 +32,7 @@ object Hydro {
     }
 
     fun hydrate(key: String, default: Any? = null): Hydrator {
-        require (dataSource != null) { "Hydro is not initialized. Use `Hydro.init()`" }
+        require (dataSource != null) { "Hydro is not initialized. Use `Hydro.init()` or `Hydro.addConfiguration()`" }
 
         return Hydrator(key, default)
     }
@@ -38,19 +42,19 @@ class Hydrator(val key: String, val default: Any?) {
 
     inline operator fun <reified R : Any, T : Any> getValue(thisRef: T, property: KProperty<*>): R {
         return cast((getNamespace(thisRef::class, property)).let {
-            cache.computeIfAbsent(getKey(it, key)) { _ ->
+            cache.computeIfAbsent(getKey("", key)) { _ ->
                 val result = computeValue<R, T>(it, thisRef, property)
-                result ?: (default ?: error("No value was set for ${getKey(it, key)}"))
+                result ?: (default ?: error("No value was set for ${getKey("", key)}"))
             }
         })
     }
 
     inline fun <reified R : Any, T : Any> computeValue(
-        prefix: String,
+        namespace: String?,
         thisRef: T,
         property: KProperty<*>
     ): Any? {
-        return Hydro.dataSource!!.getValue(getKey(prefix, key))
+        return Hydro.dataSource!!.getValue(getKey("", key), namespace)
     }
 
     fun getKey(prefix: String, key: String): String {

@@ -6,7 +6,6 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import hydro.engine.*
 import hydro.engine.Hydro.hydrate
 
-
 fun main(args: Array<String>) {
 
     val b = mapOf(
@@ -27,26 +26,27 @@ fun main(args: Array<String>) {
     val config =
         PropertiesConfiguration(S3DataSource(s3, "www.dashflight.net-config", "java-postgres/development.properties"), "postgres") overrides
         YAMLConfiguration(FileDataSource("test.yaml"), "application") overrides
-        MapConfiguration(b, "postgres")
+                EnvironmentConfiguration("env") overrides
+        MapConfiguration(b)
 
-    Hydro.addConfiguration(config)
-    Hydro.addConfiguration(EnvironmentConfiguration())
-    Hydro.addConfiguration(YAMLConfiguration(FileDataSource("development.yaml")))
+    Hydro.init {
+        addConfiguration(config)
+        addConfiguration(EnvironmentConfiguration())
+        addConfiguration(YAMLConfiguration(FileDataSource("development.yaml")))
 
-    Hydro.bindNamespace<TestHydrate>("application")
+        bindNamespace<TestHydrate>("env")
+    }
+
+    println(config)
 
     val test = TestHydrate()
     println(test.value)
-    println(test.v)
 
-    println(config)
-    println(config.getValue("postgres.one"))
-    println(config.getValue("postgres.2"))
-    println(config.getValue("nested.key"))
+    println(config.getValue("one"))
+    println(config.getValue("2"))
+    println(config.getValue("nested.key", "application"))
 }
 
 class TestHydrate {
-    val value: String by hydrate("nested.key")
-
-    val v: String by hydrate("key")
+    val value: String by hydrate("java.runtime.name")
 }

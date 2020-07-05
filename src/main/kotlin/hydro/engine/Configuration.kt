@@ -14,13 +14,20 @@ abstract class Configuration(
 
     abstract fun getData(): Map<String, Any>
 
-    fun getValue(key: String): Any? {
+    fun getValue(key: String, namespace: String? = null): Any? {
         val parts = key.split(".")
-        var d = getData()
+        var d = if (namespace == null) {
+            getData()
+        } else {
+            getData()[namespace]
+        } as Map<String, Any>
 
         var res: Any? = null
-
         for (part in parts) {
+            if (key in d) {
+                return d[key]
+            }
+
             if (part in d) {
                 res = d[part]
 

@@ -11,7 +11,7 @@ maven { url 'https://jitpack.io' }
 ```
 
 Then add the dependency to the `dependencies` section. Make sure to replace `$version` with the version
-you want to use!
+you want to use.
 
 ```groovy
 implementation 'com.github.6Sides:hydro:$version'
@@ -24,9 +24,11 @@ implementation 'com.github.6Sides:hydro:$version'
     
     // Declare map source
     val map = mapOf(
-        "one" to 1,
-        "two" to mapOf<String, Any>(
-            "three" to 3
+        "host" to "localhost",
+        "port" to 5432,
+        "user" to mapOf<String, Any>(
+            "username" to "postgres",
+            "password" to "password"
         ),
     )
     
@@ -55,7 +57,6 @@ implementation 'com.github.6Sides:hydro:$version'
 ### Step 3 - Use Configuration Values
 
 ```kotlin
-
 /*
     Use configuration values. Values are automatically 
     cast to the required type.
@@ -63,5 +64,9 @@ implementation 'com.github.6Sides:hydro:$version'
 class Database {
     val host: String by hydrate("host")
     val port: Int by hydrate("port")
+    
+    // Nested values are accessed via dots
+    val username: Int by hydrate("user.username")
+    val password: Int by hydrate("user.password")
 }
 ```

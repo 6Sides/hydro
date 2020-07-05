@@ -23,20 +23,20 @@ object Hydro {
     }
 
 
-    fun hydrate(key: String): Hydrator {
+    fun hydrate(key: String, default: Any? = null): Hydrator {
         require (dataSource != null) { "Hydro is not initialized. Use `Hydro.init()`" }
 
-        return Hydrator(null, key)
+        return Hydrator(key, default)
     }
 }
 
-class Hydrator(val prefix: String?, val key: String) {
+class Hydrator(val key: String, val default: Any?) {
 
     inline operator fun <reified R : Any, T : Any> getValue(thisRef: T, property: KProperty<*>): R {
-        return cast((prefix ?: getNamespace(thisRef::class, property)).let {
+        return cast((getNamespace(thisRef::class, property)).let {
             cache.computeIfAbsent(getKey(it, key)) { _ ->
                 val result = computeValue<R, T>(it, thisRef, property)
-                result ?: error("No value was set for ${getKey(it, key)}")
+                result ?: (default ?: error("No value was set for ${getKey(it, key)}"))
             }
         })
     }

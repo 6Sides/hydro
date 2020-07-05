@@ -26,11 +26,11 @@ fun main(args: Array<String>) {
     val config =
         PropertiesConfiguration(S3DataSource(s3, "www.dashflight.net-config", "java-postgres/development.properties"), "postgres") overrides
         YAMLConfiguration(FileDataSource("test.yaml")) overrides
-        YAMLConfiguration(FileDataSource("development.yaml")) overrides
-        MapConfiguration(b, "postgres") overrides
-            EnvironmentConfiguration()
+        MapConfiguration(b, "postgres")
 
-    Hydro.init(config)
+    Hydro.addConfiguration(config)
+    Hydro.addConfiguration(EnvironmentConfiguration())
+    Hydro.addConfiguration(YAMLConfiguration(FileDataSource("development.yaml")))
 
 
     val test = TestHydrate()

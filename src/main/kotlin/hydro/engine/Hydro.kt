@@ -8,14 +8,18 @@ import kotlin.reflect.full.starProjectedType
 
 object Hydro {
 
-    private var _dataSource: Configuration? = null
+    private var config: Configuration? = null
 
-    val dataSource get() = _dataSource
+    val dataSource get() = config
 
-    fun init(
-        dataSource: Configuration
+    fun addConfiguration(
+        config: Configuration
     ) {
-        _dataSource = dataSource
+        if (this.config == null) {
+            this.config = config
+        } else {
+            this.config = config overrides this.config!!
+        }
     }
 
 

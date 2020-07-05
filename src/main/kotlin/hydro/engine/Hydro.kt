@@ -13,31 +13,16 @@ object Hydro {
     val dataSource get() = _dataSource
 
     fun init(
-        dataSource: Configuration,
-        overrideValueBlock: (ConfigBlock.() -> Unit)? = null
+        dataSource: Configuration
     ) {
         _dataSource = dataSource
-        overrideValueBlock?.invoke(ConfigBlock)
     }
 
-
-    val overriddenValues = mutableMapOf<String, Any>()
-
-    object ConfigBlock {
-        fun overrideValue(key: String, value: Any) {
-            overriddenValues[key] = value
-        }
-    }
-
-
-    fun hydrate(prefix: String? = null, key: String): Hydrator {
-        require (dataSource != null) { "Hydro is not initialized. Use `Hydro.init()`" }
-
-        return Hydrator(prefix, key)
-    }
 
     fun hydrate(key: String): Hydrator {
-        return hydrate(null, key)
+        require (dataSource != null) { "Hydro is not initialized. Use `Hydro.init()`" }
+
+        return Hydrator(null, key)
     }
 }
 
@@ -57,11 +42,7 @@ class Hydrator(val prefix: String?, val key: String) {
         thisRef: T,
         property: KProperty<*>
     ): Any? {
-        return if (Hydro.overriddenValues.containsKey(getKey(prefix, key))) {
-            Hydro.overriddenValues[getKey(prefix, key)] as R?
-        } else {
-            Hydro.dataSource!!.getValue(getKey(prefix, key))
-        }
+        return Hydro.dataSource!!.getValue(getKey(prefix, key))
     }
 
     fun getKey(prefix: String, key: String): String {

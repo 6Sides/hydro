@@ -30,14 +30,12 @@ fun main(args: Array<String>) {
         MapConfiguration(b, "postgres") overrides
             EnvironmentConfiguration()
 
-    Hydro.init(config) {
-        overrideValue("Test.2.3", "overridden value!")
-        // overrideValue("nested.key", "WHATT")
-    }
+    Hydro.init(config)
 
 
     val test = TestHydrate()
     println(test.value)
+    println(test.v)
 
     println(config)
     println(config.getValue("postgres.one"))
@@ -45,7 +43,9 @@ fun main(args: Array<String>) {
     println(config.getValue("nested.key"))
 }
 
-@HydroNamespace("postgres")
 class TestHydrate {
+    @HydroNamespace("postgres")
     val value: String by hydrate("pg_port")
+
+    val v: Boolean by hydrate("gopherProxySet")
 }

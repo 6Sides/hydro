@@ -119,7 +119,7 @@ infix fun Configuration.overrides(other: Configuration): Configuration {
     return MapConfiguration((this.getData() overrides other.getData()) as Map<String, Any>)
 }
 
-infix fun Map<*, *>.overrides(other: Map<*, *>): Map<*, *> {
+private infix fun Map<*, *>.overrides(other: Map<*, *>): Map<*, *> {
     return mergeMaps(other, this)
 }
 

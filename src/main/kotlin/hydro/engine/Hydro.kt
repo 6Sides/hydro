@@ -9,6 +9,7 @@ import kotlin.reflect.full.starProjectedType
 object Hydro {
 
     private var config: Configuration? = null
+    val namespaces = mutableMapOf<KClass<*>, String>()
 
     val dataSource get() = config
 
@@ -22,6 +23,9 @@ object Hydro {
         }
     }
 
+    inline fun <reified T : Any> bindNamespace(namespace: String) {
+        namespaces[T::class] = namespace
+    }
 
     fun hydrate(key: String, default: Any? = null): Hydrator {
         require (dataSource != null) { "Hydro is not initialized. Use `Hydro.init()`" }
@@ -76,8 +80,9 @@ class Hydrator(val key: String, val default: Any?) {
 
 
 fun getNamespace(clazz: KClass<*>, property: KProperty<*>): String {
-    return property.findAnnotation<HydroNamespace>()?.namespace ?:
-    clazz.findAnnotation<HydroNamespace>()?.namespace ?: ""
+    return Hydro.namespaces[clazz] ?:
+            property.findAnnotation<HydroNamespace>()?.namespace ?:
+            clazz.findAnnotation<HydroNamespace>()?.namespace ?: ""
 }
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.PROPERTY)

@@ -18,6 +18,7 @@ fun main(args: Array<String>) {
         "pg_port" to 4000
     )
 
+
     val s3 = AmazonS3ClientBuilder.standard()
         .withRegion(Regions.US_EAST_2)
         .withCredentials(DefaultAWSCredentialsProviderChain())
@@ -25,13 +26,14 @@ fun main(args: Array<String>) {
 
     val config =
         PropertiesConfiguration(S3DataSource(s3, "www.dashflight.net-config", "java-postgres/development.properties"), "postgres") overrides
-        YAMLConfiguration(FileDataSource("test.yaml")) overrides
+        YAMLConfiguration(FileDataSource("test.yaml"), "application") overrides
         MapConfiguration(b, "postgres")
 
     Hydro.addConfiguration(config)
     Hydro.addConfiguration(EnvironmentConfiguration())
     Hydro.addConfiguration(YAMLConfiguration(FileDataSource("development.yaml")))
 
+    Hydro.bindNamespace<TestHydrate>("application")
 
     val test = TestHydrate()
     println(test.value)
@@ -44,8 +46,7 @@ fun main(args: Array<String>) {
 }
 
 class TestHydrate {
-    @HydroNamespace("postgres")
-    val value: String by hydrate("pg_port")
+    val value: String by hydrate("nested.key")
 
-    val v: ArrayList<*> by hydrate("allowed-headers")
+    val v: String by hydrate("key")
 }

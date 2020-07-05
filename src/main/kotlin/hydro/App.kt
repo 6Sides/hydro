@@ -24,9 +24,9 @@ fun main(args: Array<String>) {
         .build()
 
     val config =
-        MapConfiguration(mapOf("nested" to mapOf("key" to "WHATT"))) overrides
         PropertiesConfiguration(S3DataSource(s3, "www.dashflight.net-config", "java-postgres/development.properties"), "postgres") overrides
         YAMLConfiguration(FileDataSource("test.yaml")) overrides
+        YAMLConfiguration(FileDataSource("development.yaml")) overrides
         MapConfiguration(b, "postgres") overrides
             EnvironmentConfiguration()
 
@@ -47,5 +47,5 @@ class TestHydrate {
     @HydroNamespace("postgres")
     val value: String by hydrate("pg_port")
 
-    val v: Boolean by hydrate("gopherProxySet")
+    val v: ArrayList<*> by hydrate("allowed-headers")
 }

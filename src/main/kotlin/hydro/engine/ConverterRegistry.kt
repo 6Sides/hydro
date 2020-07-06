@@ -45,15 +45,6 @@ class ConverterRegistry {
     }
 
     fun getConverter(input: KType, output: KType): TypeConverter<in Any, *> {
-        // If output is a supertype of the input, no conversion needs to take place
-        if (input::class.isSubclassOf(output::class)) {
-            return object : TypeConverter<Any, Any> {
-                override fun convert(input: Any): Any {
-                    return input
-                }
-            }
-        }
-
         return converters[Pair(input, output)] as? TypeConverter<in Any, *> ?: error("No converter registered for that pair ($input, $output)")
     }
 

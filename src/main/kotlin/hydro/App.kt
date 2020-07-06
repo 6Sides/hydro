@@ -36,7 +36,7 @@ fun main(args: Array<String>) {
 
         addConfiguration(MapConfiguration(b))
 
-        bindNamespace<TestHydrate>("env")
+        bindNamespace<TestHydrate>("postgres")
     }
 
     println(Hydro.dataSource)
@@ -47,7 +47,7 @@ fun main(args: Array<String>) {
 }
 
 class TestHydrate {
-    val value: String by hydrate("java.runtime.name")
+    val value: Int by hydrate("pg_port")
 
     @HydroNamespace("application")
     val headers: List<*> by hydrate("allowed-headers")

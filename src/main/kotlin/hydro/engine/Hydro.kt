@@ -1,8 +1,10 @@
 package hydro.engine
 
+import java.lang.ClassCastException
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.full.starProjectedType
 
 
@@ -79,7 +81,8 @@ class Hydrator(val key: String, val default: Any?) {
     }
 
     inline fun <reified T : Any> cast(value: Any): T {
-        if (value::class.starProjectedType == T::class.starProjectedType) {
+        // If output is a supertype of the input, no conversion needs to take place
+        if (value::class.starProjectedType.isSubtypeOf(T::class.starProjectedType)) {
             return value as T
         }
 

@@ -23,30 +23,32 @@ fun main(args: Array<String>) {
         .withCredentials(DefaultAWSCredentialsProviderChain())
         .build()
 
-    val config =
-        PropertiesConfiguration(S3DataSource(s3, "www.dashflight.net-config", "java-postgres/development.properties"), "postgres") overrides
-        YAMLConfiguration(FileDataSource("test.yaml"), "application") overrides
-                EnvironmentConfiguration("env") overrides
-        MapConfiguration(b)
+    Hydro.configure {
+        namespace("postgres") {
+            PropertiesConfiguration(S3DataSource(s3, "www.dashflight.net-config", "java-postgres/development.properties"))
+        }
+        namespace("application") {
+            YAMLConfiguration(FileDataSource("test.yaml"))
+        }
+        namespace("env") {
+            EnvironmentConfiguration()
+        }
 
-    Hydro.init {
-        addConfiguration(config)
-        addConfiguration(EnvironmentConfiguration())
-        addConfiguration(YAMLConfiguration(FileDataSource("development.yaml")))
+        addConfiguration(MapConfiguration(b))
 
         bindNamespace<TestHydrate>("env")
     }
 
-    println(config)
+    println(Hydro.dataSource)
 
     val test = TestHydrate()
     println(test.value)
-
-    println(config.getValue("one"))
-    println(config.getValue("2"))
-    println(config.getValue("nested.key", "application"))
+    println(test.headers)
 }
 
 class TestHydrate {
     val value: String by hydrate("java.runtime.name")
+
+    @HydroNamespace("application")
+    val headers: List<*> by hydrate("allowed-headers")
 }

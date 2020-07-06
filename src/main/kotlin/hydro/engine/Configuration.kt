@@ -9,7 +9,7 @@ import java.io.IOException
 import java.util.*
 
 abstract class Configuration(
-    protected val namespace: String? = null
+    val namespace: String? = null
 ) {
 
     abstract fun getData(): Map<String, Any>

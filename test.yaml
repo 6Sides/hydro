@@ -2,3 +2,13 @@ nested:
   key: value!
 
 key: value
+
+allowed-headers:
+  - 'Content-Type'
+  - 'Authorization'
+  - 'X-Requested-With'
+  - 'Content-Length'
+  - 'Accept'
+  - 'Origin'
+  - 'Cookie'
+  - 'Secure-Fgp'

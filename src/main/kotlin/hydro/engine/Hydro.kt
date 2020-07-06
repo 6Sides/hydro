@@ -9,12 +9,21 @@ import kotlin.reflect.full.starProjectedType
 object Hydro {
 
     private var config: Configuration? = null
-    val namespaces = mutableMapOf<KClass<*>, String>()
+    val _namespaces = mutableMapOf<KClass<*>, String>()
 
     val dataSource get() = config
 
-    fun init(f: Hydro.() -> Unit) {
+    fun configure(f: Hydro.() -> Unit) {
         f.invoke(this)
+    }
+
+    fun namespace(name: String, f: Hydro.() -> Configuration) {
+        val config = f.invoke(this)
+        if (config.namespace == null) {
+            addConfiguration(MapConfiguration(config.getData(), name))
+        } else {
+            addConfiguration(MapConfiguration(config.getData()[config.namespace] as Map<String, Any>, name))
+        }
     }
 
     fun addConfiguration(
@@ -28,11 +37,11 @@ object Hydro {
     }
 
     inline fun <reified T : Any> bindNamespace(namespace: String) {
-        namespaces[T::class] = namespace
+        _namespaces[T::class] = namespace
     }
 
     fun hydrate(key: String, default: Any? = null): Hydrator {
-        require (dataSource != null) { "Hydro is not initialized. Use `Hydro.init()` or `Hydro.addConfiguration()`" }
+        require (dataSource != null) { "Hydro is not initialized. Use `Hydro.configure()` or `Hydro.addConfiguration()`" }
 
         return Hydrator(key, default)
     }
@@ -84,9 +93,9 @@ class Hydrator(val key: String, val default: Any?) {
 
 
 fun getNamespace(clazz: KClass<*>, property: KProperty<*>): String {
-    return Hydro.namespaces[clazz] ?:
-            property.findAnnotation<HydroNamespace>()?.namespace ?:
-            clazz.findAnnotation<HydroNamespace>()?.namespace ?: ""
+    return property.findAnnotation<HydroNamespace>()?.namespace ?:
+            clazz.findAnnotation<HydroNamespace>()?.namespace ?:
+            Hydro._namespaces[clazz] ?: ""
 }
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.PROPERTY)

@@ -10,8 +10,8 @@ plugins {
     id("maven-publish")
 }
 
-def githubProperties = new Properties()
-githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
+// def githubProperties = new Properties()
+// githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
 
 def getVersionName = { ->
     return "1.0.3"
@@ -26,10 +26,10 @@ publishing {
         maven {
             name = "GitHubPackages"
             url = "https://maven.pkg.github.com/6Sides/hydro"
-            credentials {
+            /* credentials {
                 username = githubProperties['gpr.usr'] ?: System.getenv("GITHUB_USERNAME")
                 password = githubProperties['gpr.key'] ?: System.getenv("GITHUB_TOKEN")
-            }
+            }*/
         }
     }
     publications {

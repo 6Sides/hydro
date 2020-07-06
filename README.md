@@ -124,11 +124,17 @@ These two configuration sources have duplicate keys which would cause certain va
 on the order in which the files were loaded. This can be solved by specifying namespaces like so:
 
 ```kotlin
-val config =
+Hydro.configure {
+    namespace("postgres") {
         // Load with namespace `postgres`
-        YAMLConfiguration(FileDataSource("postgres.yaml"), "postgres") overrides
+        YAMLConfiguration(FileDataSource("postgres.yaml"), "postgres")
+    }
+    
+    namespace("redis") {
         // Load with namespace `redis`
         YAMLConfiguration(FileDataSource("redis.yaml"), "redis")
+    }
+}
 ```
 
 These values can be accessed a few different ways:

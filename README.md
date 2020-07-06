@@ -49,8 +49,8 @@ class Database {
     val port: Int by hydrate("port")
     
     // Nested values are accessed via dots
-    val username: Int by hydrate("user.username")
-    val password: Int by hydrate("user.password")
+    val username: String by hydrate("user.username")
+    val password: String by hydrate("user.password")
 }
 ```
 
@@ -143,8 +143,8 @@ class Database {
     val port: Int by hydrate("port", "postgres")
     
     // Nested values are accessed via dots
-    val username: Int by hydrate("user.username", "postgres")
-    val password: Int by hydrate("user.password", "postgres")
+    val username: String by hydrate("user.username", "postgres")
+    val password: String by hydrate("user.password", "postgres")
 }
 ```
 
@@ -159,8 +159,8 @@ class Database {
     val port: Int by hydrate("port")
     
     // Nested values are accessed via dots
-    val username: Int by hydrate("user.username")
-    val password: Int by hydrate("user.password")
+    val username: String by hydrate("user.username")
+    val password: String by hydrate("user.password")
 }
 ```
 
@@ -176,8 +176,8 @@ class Database {
     val port: Int by hydrate("port")
     
     // Nested values are accessed via dots
-    val username: Int by hydrate("user.username")
-    val password: Int by hydrate("user.password")
+    val username: String by hydrate("user.username")
+    val password: String by hydrate("user.password")
 }
 ```
 

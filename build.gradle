@@ -10,14 +10,11 @@ plugins {
     id("maven-publish")
 }
 
-def githubProperties = new Properties()
-githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
-
 def getVersionName = { ->
     return "1.0"
 }
 
-def getArtifiactId = { ->
+def getArtifactId = { ->
     return "hydro"
 }
 
@@ -27,8 +24,8 @@ publishing {
             name = "GitHubPackages"
             url = "https://maven.pkg.github.com/6Sides/hydro"
             credentials {
-                username = githubProperties['gpr.usr'] ?: System.getenv("GPR_USER")
-                password = githubProperties['gpr.key'] ?: System.getenv("GPR_API_KEY")
+                username = System.getenv("GITHUB_USERNAME")
+                password = System.getenv("GITHUB_TOKEN")
             }
         }
     }
@@ -36,9 +33,9 @@ publishing {
         gpr(MavenPublication) {
             from(components.java)
             groupId 'dev.6Sides'
-            artifactId getArtifiactId()
+            artifactId getArtifactId()
             version getVersionName()
-            artifact("$buildDir/outputs/aar/${getArtifiactId()}-release.aar")
+            artifact("$buildDir/outputs/aar/${getArtifactId()}-release.aar")
         }
     }
 }

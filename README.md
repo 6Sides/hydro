@@ -127,12 +127,12 @@ on the order in which the files were loaded. This can be solved by specifying na
 Hydro.configure {
     namespace("postgres") {
         // Load with namespace `postgres`
-        YAMLConfiguration(FileDataSource("postgres.yaml"), "postgres")
+        YAMLConfiguration(FileDataSource("postgres.yaml"))
     }
     
     namespace("redis") {
         // Load with namespace `redis`
-        YAMLConfiguration(FileDataSource("redis.yaml"), "redis")
+        YAMLConfiguration(FileDataSource("redis.yaml"))
     }
 }
 ```

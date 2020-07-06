@@ -45,7 +45,9 @@ Hydro.addConfiguration(config)
     cast to the required type.
 */
 class Database {
-    val host: String by hydrate("host")
+    // Here a default value of `localhost` is provided. It is used if no
+    // value is specified for the key `host`
+    val host: String by hydrate("host", "localhost")
     val port: Int by hydrate("port")
     
     // Nested values are accessed via dots
@@ -145,12 +147,18 @@ These values can be accessed a few different ways:
   for values in that namespace.
 */
 class Database {
-    val host: String by hydrate("host", "postgres")
-    val port: Int by hydrate("port", "postgres")
+    @HydroNamespace("postgres")
+    val host: String by hydrate("host")
+
+    @HydroNamespace("postgres")
+    val port: Int by hydrate("port")
     
     // Nested values are accessed via dots
-    val username: String by hydrate("user.username", "postgres")
-    val password: String by hydrate("user.password", "postgres")
+    @HydroNamespace("postgres")
+    val username: String by hydrate("user.username")
+
+    @HydroNamespace("postgres")
+    val password: String by hydrate("user.password")
 }
 ```
 

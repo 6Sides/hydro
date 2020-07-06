@@ -82,11 +82,11 @@ class Hydrator(val key: String, val default: Any?) {
 
     inline fun <reified T : Any> cast(value: Any): T {
         // If output is a supertype of the input, no conversion needs to take place
-        if (value::class.starProjectedType.isSubtypeOf(T::class.starProjectedType)) {
-            return value as T
+        return if (value::class.starProjectedType.isSubtypeOf(T::class.starProjectedType)) {
+            value as T
+        } else {
+            ConverterRegistry().getConverter(value::class.starProjectedType, T::class.starProjectedType).convert(value) as T
         }
-
-        return ConverterRegistry().getConverter(value::class.starProjectedType, T::class.starProjectedType).convert(value) as T
     }
 
     companion object {

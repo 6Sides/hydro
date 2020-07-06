@@ -50,5 +50,5 @@ class TestHydrate {
     val value: Int by hydrate("pg_port")
 
     @HydroNamespace("application")
-    val headers: List<*> by hydrate("allowed-headers")
+    val headers: List<String> by hydrate("allowed-headers")
 }
